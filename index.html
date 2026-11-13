@@ -52,7 +52,9 @@ select option{background:#1d1b4b;color:#fff}
 .b.d{background:rgba(255,93,93,.14);color:#ffc2c2;border-color:#ff5d5d99}
 .b.d:hover:not(:disabled){background:rgba(255,93,93,.28)}
 .b:disabled{opacity:.4;cursor:not-allowed}
-.card.busy .b{pointer-events:none;opacity:.6}
+.b.pause.on{box-shadow:0 0 0 2px #fdba74,0 0 16px #f9731688}
+.b.resume{border-color:#4ade80;box-shadow:0 0 14px #4ade8055}
+.card.busy .b:not([data-a=tamngung]):not([data-a=tieptuc]){pointer-events:none;opacity:.6}
 .b.run .spin,.b.pause .spin{border-color:#0004;border-top-color:#000}
 .b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #c4b5fd;outline-offset:2px}
 #login{text-align:center;margin:80px auto;max-width:420px;padding:32px 24px;border-radius:20px}
@@ -76,7 +78,7 @@ const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='6168
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
 const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
 const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
-const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={};
+const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={},paused={};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
 function ago(s){if(!s)return'chưa có';const m=Math.round((Date.now()-new Date(s))/6e4);return m<1?'vừa xong':m<60?m+' phút trước':m<1440?Math.floor(m/60)+' giờ trước':Math.floor(m/1440)+' ngày trước'}
@@ -91,7 +93,7 @@ async function syncShots(){let changed=false;try{shots=await api('/shots');await
 function setBusy(n,label,a,ms){clearBusy(n);busy[n]={label,a};if(ms)busy[n].t=setTimeout(()=>{delete busy[n];render()},ms);render()}
 function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
 function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
- const own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
+ const pz=vm&&paused[n],own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
  const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
  const sp=a=>bz&&bz.a==a?'<i class="spin"></i>':'';
  return `<article class="card ${st}${bz?' busy':''}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
@@ -103,26 +105,28 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Chụp màn hình</button>
- ${vm?`<button class="b run" data-a="mo" data-n="${en}" aria-label="Mở máy ảo"${dis}>${sp('mo')}RUN</button><button class="b pause" data-a="tamngung" data-n="${en}"${dis}>${sp('tamngung')}Tạm ngưng</button><button class="b" data-a="tieptuc" data-n="${en}"${dis}>${sp('tieptuc')}Tiếp tục</button>`:''}
+ <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
+ ${vm?`<button class="b pause${pz?' on':''}" data-a="tamngung" data-n="${en}" aria-pressed="${!!pz}">${sp('tamngung')}${pz?'Đã tạm ngưng':'Tạm ngưng'}</button><button class="b${pz?' resume':''}" data-a="tieptuc" data-n="${en}">${sp('tieptuc')}Tiếp tục</button>`:''}
  <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
- $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs()]);updDef();safeRender()}
+ $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs(),syncPaused()]);updDef();safeRender()}
  catch(e){$('err').textContent=e.message}}
+async function syncPaused(){try{paused=await api('/paused')}catch(e){}}
 async function refreshShots(){if(await syncShots())safeRender()}
 async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
 async function waitShot(n){const old=shots[n]||0;
  for(let k=0;k<12;k++){await new Promise(r=>setTimeout(r,4000));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();clearBusy(n);render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
  clearBusy(n);render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
-async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,okMsg)){if(a=='chup')waitShot(n);else setBusy(n,'Máy đang nhận lệnh…',a,15000)}else{clearBusy(n);render()}}
+async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,okMsg)){if(a=='tamngung')paused[n]=1;if(a=='tieptuc')delete paused[n];if(a=='chup')waitShot(n);else setBusy(n,'Máy đang nhận lệnh…',a,15000)}else{clearBusy(n);render()}}
 async function act(a,n){
  if(a=='bg'){bgTarget=n;$('bgf').click();return}
  if(a=='bgx')return delBg(n);
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
  if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
- if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh mở '+n+'.','Đang gửi lệnh chạy…');
+ if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh chạy '+n+'.','Đang gửi lệnh chạy…');
  if(a=='tamngung')return run(n,a,{cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.','Đang gửi lệnh tạm ngưng…');
  if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
 function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
