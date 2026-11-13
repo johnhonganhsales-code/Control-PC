@@ -25,6 +25,7 @@ select{font:inherit;padding:8px;border-radius:6px;border:1px solid var(--line);b
 .act{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
 .b{font:inherit;font-weight:600;padding:9px 12px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#12161a;cursor:pointer}
 .b.o{background:transparent;color:var(--ink);border-color:#53616b}
+.b:disabled{opacity:.4;cursor:not-allowed}
 .b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #5aa9e6;outline-offset:2px}
 #login{text-align:center;margin:80px 16px}
 dialog{width:min(900px,96vw);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:16px}dialog::backdrop{background:#000a}
@@ -65,7 +66,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
  <div class="act"><button class="b" data-a="chup" data-n="${en}">Chụp màn hình</button>
- ${vm?`<button class="b" data-a="mo" data-n="${en}">Mở máy ảo</button><button class="b o" data-a="tamngung" data-n="${en}">Tạm ngưng</button><button class="b o" data-a="tieptuc" data-n="${en}">Tiếp tục</button>`:''}</div></div></article>`}
+ ${vm?`<button class="b" data-a="mo" data-n="${en}">Mở máy ảo</button><button class="b o" data-a="tamngung" data-n="${en}">Tạm ngưng</button><button class="b o" data-a="tieptuc" data-n="${en}">Tiếp tục</button>`:`<button class="b" data-a="run" data-n="${en}" ${st=='down'?'disabled title="Máy đang tắt"':''}>RUN</button>`}</div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
@@ -77,7 +78,7 @@ async function waitShot(n){const old=shots[n]||0;busy[n]=true;render();
  busy[n]=false;render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
 async function act(a,n){
  if(a=='chup'){if(await send({cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.'))waitShot(n);return}
- if(a=='mo')return send({cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh mở '+n+'.');
+ if(a=='mo'||a=='run')return send({cmd:a,machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},(a=='run'?'Đã gửi lệnh RUN cho ':'Đã gửi lệnh mở ')+n+'.');
  if(a=='tamngung')return send({cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.');
  if(a=='tieptuc')return send({cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.')}
 function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
