@@ -4,61 +4,92 @@
 <title>Máy của Tiến</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root{--bg:#e9eef1;--ink:#16252e;--mut:#5d6f79;--line:#cbd6dc;--card:#fff;--ok:#1b7f4b;--down:#c4302b;--warn:#b86a00;--idle:#6b7a83}
-*{box-sizing:border-box}body{margin:0;font:16px/1.45 system-ui,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
-main{max-width:640px;margin:0 auto;padding:16px 14px 40px}
-h1{font-size:1.25rem;margin:4px 0 2px}.sum{color:var(--mut);margin:0 0 14px;font-variant-numeric:tabular-nums}
-.row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;margin:0 0 8px;background:var(--card);border:1px solid var(--line);border-left:6px solid var(--idle);border-radius:6px;text-align:left;font:inherit;color:inherit;cursor:pointer}
-.row:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #1d6fa5;outline-offset:2px}
-.row.up{border-left-color:var(--ok)}.row.down{border-left-color:var(--down)}.row.grace{border-left-color:var(--warn)}
-.nm{flex:1;font-weight:600}.st{font-weight:700;font-size:.9rem}.up .st{color:var(--ok)}.down .st{color:var(--down)}.grace .st{color:var(--warn)}
-.ago{color:var(--mut);font-size:.85rem;min-width:84px;text-align:right}
-#login,#err{text-align:center;margin:40px 0}#err{color:var(--down);margin:8px 0}
-dialog{width:min(520px,94vw);border:1px solid var(--line);border-radius:8px;padding:18px}dialog::backdrop{background:#0006}
-dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0}dt{color:var(--mut)}dd{margin:0}
-.act{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}label{display:block;margin-top:10px;color:var(--mut);font-size:.9rem}
-select,button.b{font:inherit;padding:10px 12px;border-radius:6px;border:1px solid var(--line);background:#fff}select{width:100%}
-button.b{cursor:pointer;font-weight:600;background:#16252e;color:#fff;border-color:#16252e}button.b.o{background:#fff;color:var(--ink)}
-#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#16252e;color:#fff;padding:10px 16px;border-radius:6px;display:none;max-width:90vw}
-</style></head><body><main>
+:root{--bg:#12161a;--card:#1c2228;--line:#2c353d;--ink:#e8edf0;--mut:#93a1ab;--ok:#3fb97a;--down:#ef5a50;--warn:#f0a43a;--idle:#7d8b95}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,"Segoe UI",sans-serif}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
+h1{font-size:1.15rem;margin:0;flex:1}.sum{color:var(--mut);font-variant-numeric:tabular-nums}
+#err{color:var(--down);padding:8px 18px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:16px 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.th{position:relative;aspect-ratio:16/9;background:#0c0f12;cursor:pointer;border-bottom:3px solid var(--idle)}
+.up .th{border-color:var(--ok)}.down .th{border-color:var(--down)}.grace .th{border-color:var(--warn)}
+.th img{width:100%;height:100%;object-fit:cover;display:block}.down .th img{opacity:.45}
+.ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mut)}
+.chip{position:absolute;top:8px;left:8px;padding:3px 10px;border-radius:99px;background:#000b;font-weight:700;font-size:.85rem;color:var(--idle)}
+.up .chip{color:var(--ok)}.down .chip{color:var(--down)}.grace .chip{color:var(--warn)}
+.meta{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:8px;padding:16px 10px 6px;background:linear-gradient(transparent,#000c);font-size:.78rem;color:#dfe6ea}
+.wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000a;font-weight:700}
+.bd{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}h2{font-size:1.02rem;margin:0}
+.sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+select{font:inherit;padding:8px;border-radius:6px;border:1px solid var(--line);background:#12161a;color:var(--ink);min-width:0}
+.act{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.b{font:inherit;font-weight:600;padding:9px 12px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#12161a;cursor:pointer}
+.b.o{background:transparent;color:var(--ink);border-color:#53616b}
+.b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #5aa9e6;outline-offset:2px}
+#login{text-align:center;margin:80px 16px}
+dialog{width:min(900px,96vw);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:16px}dialog::backdrop{background:#000a}
+dialog img{width:100%;border-radius:6px;display:block;margin-top:10px}
+dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0}dt{color:var(--mut)}dd{margin:0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#12161a;padding:10px 16px;border-radius:6px;display:none;max-width:90vw;font-weight:600}
+</style></head><body>
 <div id="login" hidden><h1>Máy của Tiến</h1><p>Đăng nhập bằng tài khoản Google đã được cấp quyền.</p><div id="gbtn" style="display:inline-block"></div></div>
 <div id="app" hidden>
-<h1>Máy của Tiến</h1><p class="sum" id="sum">Đang tải…</p><div id="err"></div><div id="list"></div>
-<div class="act"><button class="b o" id="re">Làm mới</button><button class="b o" id="out">Đăng xuất</button></div></div>
-<dialog id="dlg"></dialog><div id="toast" role="status"></div></main>
+<header><h1>Máy của Tiến</h1><span class="sum" id="sum">Đang tải…</span>
+<button class="b" id="all">Chụp tất cả</button><button class="b o" id="re">Làm mới</button><button class="b o" id="out">Đăng xuất</button></header>
+<div id="err"></div><main id="grid"></main></div>
+<dialog id="dlg"></dialog><div id="toast" role="status"></div>
 <script>
 const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='616827327363-30v6rgsuscl0pjf8j8ep2g439tsu7lcn.apps.googleusercontent.com';
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
 const TXT={up:'Đang mở',down:'Tắt',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
-const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},timer;
+const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
+const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4000)}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
 function ago(s){if(!s)return'chưa có';const m=Math.round((Date.now()-new Date(s))/6e4);return m<1?'vừa xong':m<60?m+' phút trước':m<1440?Math.floor(m/60)+' giờ trước':Math.floor(m/1440)+' ngày trước'}
-function dur(s){return s%3600==0?s/3600+' giờ':s%60==0?s/60+' phút':s+' giây'}
-function when(s){return s?new Date(s).toLocaleString('vi-VN'):'—'}
-async function api(p,o={}){const r=await fetch(API+p,{...o,headers:{authorization:'Bearer '+localStorage.idt,'content-type':'application/json'}});
- if(r.status==401){logout(false);throw Error('Hết phiên đăng nhập')}const d=await r.json();if(!r.ok)throw Error(d.error||r.status);return d}
+const dur=s=>s%3600==0?s/3600+' giờ':s%60==0?s/60+' phút':s+' giây',when=s=>s?new Date(s).toLocaleString('vi-VN'):'—';
+async function raw(p,o={}){const r=await fetch(API+p,{...o,headers:{authorization:'Bearer '+localStorage.idt,'content-type':'application/json'}});
+ if(r.status==401){logout(false);throw Error('Hết phiên đăng nhập, hãy đăng nhập lại')}return r}
+async function api(p,o){const r=await raw(p,o),d=await r.json();if(!r.ok)throw Error(d.error||r.status);return d}
 function logout(manual){localStorage.removeItem('idt');clearInterval(timer);$('app').hidden=true;$('login').hidden=false;if(manual)google.accounts.id.disableAutoSelect()}
+async function syncShots(){try{shots=await api('/shots');await Promise.all(Object.keys(shots).map(async n=>{
+ if(imgs[n]&&imgs[n].ts==shots[n])return;const r=await raw('/shot?machine='+encodeURIComponent(n));if(!r.ok)return;
+ const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u}}))}catch(e){}}
+function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n);
+ const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
+ return `<article class="card ${st}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
+ ${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:`<div class="ph">${PH}</div>`}
+ <span class="chip">${TXT[st]||esc(st)}</span>
+ <div class="meta"><span>Ping: ${ago(c.last_ping)}</span><span>${im?'Ảnh: '+ago(im.ts):''}</span></div>${busy[n]?'<div class="wait">Đang chụp…</div>':''}</div>
+ <div class="bd"><h2>${esc(c.name)}</h2>
+ ${vm?`<div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
+ <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>`:''}
+ <div class="act"><button class="b" data-a="chup" data-n="${en}">Chụp màn hình</button>
+ ${vm?`<button class="b" data-a="mo" data-n="${en}">Mở máy ảo</button><button class="b o" data-a="tamngung" data-n="${en}">Tạm ngưng</button><button class="b o" data-a="tieptuc" data-n="${en}">Tiếp tục</button>`:''}</div></div></article>`}
+function render(){$('grid').innerHTML=checks.map(card).join('')}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
- $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';
- $('list').innerHTML=checks.map((c,i)=>`<button class="row ${c.status}" data-i="${i}"><span class="nm">${esc(c.name)}</span><span class="st">${TXT[c.status]||esc(c.status)}</span><span class="ago">${ago(c.last_ping)}</span></button>`).join('')}
+ $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';render();await syncShots();render()}
  catch(e){$('err').textContent=e.message}}
+async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
+async function waitShot(n){const old=shots[n]||0;busy[n]=true;render();
+ for(let k=0;k<12;k++){await new Promise(r=>setTimeout(r,4000));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();busy[n]=false;render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
+ busy[n]=false;render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
+async function act(a,n){
+ if(a=='chup'){if(await send({cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.'))waitShot(n);return}
+ if(a=='mo')return send({cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh mở '+n+'.');
+ if(a=='tamngung')return send({cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.');
+ if(a=='tieptuc')return send({cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.')}
+function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
+ $('dlg').innerHTML=`<h2>${esc(c.name)}: ${TXT[c.status]||esc(c.status)}</h2><dl><dt>Ping cuối</dt><dd>${when(c.last_ping)} (${ago(c.last_ping)})</dd>
+ <dt>Ping tới</dt><dd>${when(c.next_ping)}</dd><dt>Số lần ping</dt><dd>${c.n_pings}</dd><dt>Timeout</dt><dd>${dur(c.timeout)}</dd><dt>Grace</dt><dd>${dur(c.grace)}</dd></dl>
+ <button class="b o" id="bx">Đóng</button>${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:''}`;$('bx').onclick=()=>$('dlg').close();$('dlg').showModal()}
+$('grid').onclick=e=>{const b=e.target.closest('button[data-a]');if(b)return act(b.dataset.a,b.dataset.n);const t=e.target.closest('.th');if(t)detail(+t.dataset.i)};
+$('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))detail(+e.target.dataset.i)};
+$('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(s)localStorage.setItem('vm_'+s.dataset.k+'_'+s.dataset.n,s.dataset.k=='mode'?s.value:s.selectedIndex)};
+$('all').onclick=()=>checks.filter(c=>c.status!='paused').forEach(c=>act('chup',c.name.toLowerCase()));
+$('re').onclick=load;$('out').onclick=()=>logout(true);
 async function start(){$('login').hidden=true;$('app').hidden=false;try{cfg=await api('/config')}catch(e){return}await load();clearInterval(timer);timer=setInterval(load,6e4)}
-async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.')}catch(e){toast('Gửi lệnh lỗi: '+e.message)}}
-function detail(i){const c=checks[i],n=c.name.toLowerCase(),vm=cfg.vms.includes(n),k=s=>'vm_'+s+'_'+n;
- const sm=+localStorage.getItem(k('mode'))||9-1+1,sa=+localStorage.getItem(k('acc'))||0;
- $('dlg').innerHTML=`<h2 style="margin:0">${esc(c.name)} — ${TXT[c.status]||esc(c.status)}</h2><dl>
- <dt>Ping cuối</dt><dd>${when(c.last_ping)} (${ago(c.last_ping)})</dd><dt>Ping tới</dt><dd>${when(c.next_ping)}</dd>
- <dt>Số lần ping</dt><dd>${c.n_pings}</dd><dt>Timeout</dt><dd>${dur(c.timeout)}</dd><dt>Grace</dt><dd>${dur(c.grace)}</dd></dl>
- ${vm?`<label>Chế độ bot chạy<select id="sm">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select></label>
- <label>Tài khoản<select id="sa">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></label>`:''}
- <div class="act"><button class="b o" id="bc">Chụp màn hình</button>${vm?'<button class="b" id="bm">Mở máy ảo</button><button class="b o" id="bp">Tạm ngưng</button><button class="b o" id="br">Tiếp tục</button>':''}<button class="b o" id="bx">Đóng</button></div>`;
- $('bc').onclick=()=>send({cmd:'chup',machine:n},'Đã gửi lệnh chụp màn hình.');$('bx').onclick=()=>$('dlg').close();
- if(vm){$('bm').onclick=()=>{const m=$('sm').value,a=$('sa').value;localStorage.setItem(k('mode'),m);localStorage.setItem(k('acc'),$('sa').selectedIndex);send({cmd:'mo',machine:n,mode:+m,acc:a},'Đã gửi lệnh mở máy ảo.')};
-  $('bp').onclick=()=>send({cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.');$('br').onclick=()=>send({cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.')}
- $('dlg').showModal()}
-$('list').onclick=e=>{const b=e.target.closest('.row');if(b)detail(+b.dataset.i)};$('re').onclick=load;$('out').onclick=()=>logout(true);
 window.onload=()=>{google.accounts.id.initialize({client_id:CLIENT_ID,auto_select:true,callback:r=>{localStorage.idt=r.credential;start()}});
  google.accounts.id.renderButton($('gbtn'),{theme:'outline',size:'large',text:'signin_with'});
  if(localStorage.idt)start();else $('login').hidden=false}
