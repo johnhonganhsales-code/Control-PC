@@ -4,47 +4,75 @@
 <title>Máy của Tiến</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root{--bg:#12161a;--card:#1c2228;--line:#2c353d;--ink:#e8edf0;--mut:#93a1ab;--ok:#3fb97a;--down:#ef5a50;--warn:#f0a43a;--idle:#7d8b95}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 system-ui,"Segoe UI",sans-serif}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
-h1{font-size:1.15rem;margin:0;flex:1}.sum{color:var(--mut);font-variant-numeric:tabular-nums}
-#err{color:var(--down);padding:8px 18px}
-#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;padding:16px 18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
-.th{position:relative;aspect-ratio:16/9;background:#0c0f12;cursor:pointer;border-bottom:3px solid var(--idle)}
-.up .th{border-color:var(--ok)}.down .th{border-color:var(--down)}.grace .th{border-color:var(--warn)}
-.th img{width:100%;height:100%;object-fit:cover;display:block}.down .th img{opacity:.45}
-.ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mut)}
-.chip{position:absolute;top:8px;left:8px;padding:3px 10px;border-radius:99px;background:#000b;font-weight:700;font-size:.85rem;color:var(--idle)}
-.up .chip{color:var(--ok)}.down .chip{color:var(--down)}.grace .chip{color:var(--warn)}
-.meta{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:8px;padding:16px 10px 6px;background:linear-gradient(transparent,#000c);font-size:.78rem;color:#dfe6ea}
-.wait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#000a;font-weight:700}
-.bd{padding:12px;display:flex;flex-direction:column;gap:10px;flex:1}h2{font-size:1.02rem;margin:0}
+:root{--ink:#f4f6ff;--mut:#b9bfe6;--ok:#4ade80;--down:#ff5d5d;--warn:#ffa94d;--idle:#a5b4fc;--glass:rgba(255,255,255,.09);--edge:rgba(255,255,255,.2)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font:15px/1.4 system-ui,"Segoe UI",sans-serif;
+ background:radial-gradient(60% 50% at 12% 8%,#7c3aed99,transparent 70%),radial-gradient(50% 45% at 92% 18%,#06b6d488,transparent 70%),radial-gradient(60% 50% at 70% 100%,#2563eb88,transparent 70%),linear-gradient(135deg,#1a1245,#241a6b 45%,#0b3b66);background-attachment:fixed}
+.glass{background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--edge)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 18px 0;padding:12px 16px;border-radius:18px;box-shadow:0 8px 32px #0004,inset 0 1px 0 #ffffff30}
+h1{font-size:1.15rem;margin:0;flex:1;display:flex;align-items:center;gap:10px}
+h1 svg{color:#a5b4fc}
+.sum{color:var(--mut);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+.sum::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.auto{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:.9rem}
+#err{color:#ffb4b4;padding:8px 18px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;padding:18px}
+.card{--glow:#a5b4fc;background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--edge);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px #0005,inset 0 1px 0 #ffffff30;transition:box-shadow .25s,border-color .25s}
+.card.up{--glow:var(--ok)}.card.grace{--glow:var(--warn)}.card.down{--glow:var(--down)}
+.card.down{background:rgba(255,70,70,.13);border-color:#ff5d5d88;box-shadow:0 8px 32px #0005,0 0 26px -8px var(--down),inset 0 1px 0 #ffffff30}
+.card:hover{border-color:var(--glow);box-shadow:0 8px 32px #0005,0 0 0 1px var(--glow),0 0 30px -2px var(--glow),inset 0 1px 0 #ffffff30}
+.th{position:relative;aspect-ratio:16/9;margin:10px 10px 0;border-radius:12px;overflow:hidden;background:rgba(8,6,30,.55);border:1px solid var(--edge);cursor:pointer}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.down .th img{filter:grayscale(1) brightness(.55)}
+.ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mut);text-align:center;padding:0 12px}
+.chip{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;background:rgba(10,8,40,.6);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border:1px solid var(--edge);font-weight:700;font-size:.82rem;color:var(--idle)}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.up .chip{color:var(--ok)}.grace .chip{color:var(--warn)}.down .chip{color:var(--down)}
+.down .chip::before{animation:blink 1.4s ease-in-out infinite}
+.off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(120,10,10,.35);color:#ffd3d3;font-weight:700;letter-spacing:.02em;pointer-events:none}
+.meta{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:8px;padding:18px 10px 6px;background:linear-gradient(transparent,#0009);font-size:.78rem;color:#e6e9ff}
+.wait{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,8,40,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);font-weight:700}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid #ffffff55;border-top-color:#fff;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-3px;margin-right:6px}
+.wait .spin{width:30px;height:30px;border-width:3px;margin:0 0 8px}
+@keyframes sp{to{transform:rotate(360deg)}}@keyframes blink{50%{opacity:.25}}
+.bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}h2{font-size:1.02rem;margin:0}
 .sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-select{font:inherit;padding:8px;border-radius:6px;border:1px solid var(--line);background:#12161a;color:var(--ink);min-width:0}
+select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--edge);background:rgba(10,8,40,.45);color:var(--ink);min-width:0}
+select option{background:#1d1b4b;color:#fff}
 .act{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
-.b{font:inherit;font-weight:600;padding:9px 12px;border-radius:6px;border:1px solid var(--ink);background:var(--ink);color:#12161a;cursor:pointer}
-.b.o{background:transparent;color:var(--ink);border-color:#53616b}
+.b{font:inherit;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.14);color:var(--ink);cursor:pointer;transition:background .2s,box-shadow .2s}
+.b:hover:not(:disabled){background:rgba(255,255,255,.25)}
+.b.run{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#4ade80;color:#04210f}
+.b.run:hover:not(:disabled){background:linear-gradient(135deg,#34d36f,#1fb457);box-shadow:0 0 18px #22c55e88}
+.b.pause{background:linear-gradient(135deg,#fb923c,#f97316);border-color:#fdba74;color:#2b1100}
+.b.pause:hover:not(:disabled){background:linear-gradient(135deg,#fca05a,#fb8330);box-shadow:0 0 18px #f9731688}
+.b.d{background:rgba(255,93,93,.14);color:#ffc2c2;border-color:#ff5d5d99}
+.b.d:hover:not(:disabled){background:rgba(255,93,93,.28)}
 .b:disabled{opacity:.4;cursor:not-allowed}
-.b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #5aa9e6;outline-offset:2px}
-#login{text-align:center;margin:80px 16px}
-dialog{width:min(900px,96vw);background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:16px}dialog::backdrop{background:#000a}
-dialog img{width:100%;border-radius:6px;display:block;margin-top:10px}
+.card.busy .b{pointer-events:none;opacity:.6}
+.b.run .spin,.b.pause .spin{border-color:#0004;border-top-color:#000}
+.b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #c4b5fd;outline-offset:2px}
+#login{text-align:center;margin:80px auto;max-width:420px;padding:32px 24px;border-radius:20px}
+dialog{width:min(900px,96vw);background:rgba(28,22,80,.78);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);color:var(--ink);border:1px solid var(--edge);border-radius:20px;padding:18px}
+dialog::backdrop{background:#0008}
+dialog img{width:100%;border-radius:12px;display:block;margin-top:10px}
 dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0}dt{color:var(--mut)}dd{margin:0}
-#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:#12161a;padding:10px 16px;border-radius:6px;display:none;max-width:90vw;font-weight:600}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:rgba(255,255,255,.18);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid var(--edge);color:var(--ink);padding:10px 16px;border-radius:12px;display:none;max-width:90vw;font-weight:600;box-shadow:0 8px 32px #0006}
+@media (prefers-reduced-motion:reduce){.down .chip::before{animation:none}.spin{animation-duration:2s}}
 </style></head><body>
-<div id="login" hidden><h1>Máy của Tiến</h1><p>Đăng nhập bằng tài khoản Google đã được cấp quyền.</p><div id="gbtn" style="display:inline-block"></div></div>
+<div id="login" class="glass" hidden><h1 style="justify-content:center">Máy của Tiến</h1><p>Đăng nhập bằng tài khoản Google đã được cấp quyền.</p><div id="gbtn" style="display:inline-block"></div></div>
 <div id="app" hidden>
-<header><h1>Máy của Tiến</h1><span class="sum" id="sum">Đang tải…</span>
-<button class="b" id="all">Chụp tất cả</button><button class="b o" id="re">Làm mới</button><button class="b o" id="out">Đăng xuất</button></header>
+<header class="glass"><h1><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>Máy của Tiến</h1><span class="sum" id="sum">Đang tải…</span>
+<label class="auto">Tự chụp <select id="auto" aria-label="Tự chụp màn hình theo chu kỳ"><option value="0">Tắt</option><option value="2">2 phút</option><option value="5">5 phút</option><option value="10">10 phút</option></select></label>
+<button class="b" id="all">Chụp tất cả</button><button class="b" id="re">Làm mới</button><button class="b" id="out">Đăng xuất</button></header>
 <div id="err"></div><main id="grid"></main></div>
 <dialog id="dlg"></dialog><div id="toast" role="status"></div>
 <script>
 const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='616827327363-30v6rgsuscl0pjf8j8ep2g439tsu7lcn.apps.googleusercontent.com';
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
-const TXT={up:'Đang mở',down:'Tắt',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
+const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
 const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
-const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer;
+const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
 function ago(s){if(!s)return'chưa có';const m=Math.round((Date.now()-new Date(s))/6e4);return m<1?'vừa xong':m<60?m+' phút trước':m<1440?Math.floor(m/60)+' giờ trước':Math.floor(m/1440)+' ngày trước'}
@@ -52,45 +80,56 @@ const dur=s=>s%3600==0?s/3600+' giờ':s%60==0?s/60+' phút':s+' giây',when=s=>
 async function raw(p,o={}){const r=await fetch(API+p,{...o,headers:{authorization:'Bearer '+localStorage.idt,'content-type':'application/json'}});
  if(r.status==401){logout(false);throw Error('Hết phiên đăng nhập, hãy đăng nhập lại')}return r}
 async function api(p,o){const r=await raw(p,o),d=await r.json();if(!r.ok)throw Error(d.error||r.status);return d}
-function logout(manual){localStorage.removeItem('idt');clearInterval(timer);$('app').hidden=true;$('login').hidden=false;if(manual)google.accounts.id.disableAutoSelect()}
-async function syncShots(){try{shots=await api('/shots');await Promise.all(Object.keys(shots).map(async n=>{
+function logout(manual){localStorage.removeItem('idt');clearInterval(timer);clearInterval(syncT);clearInterval(autoT);$('app').hidden=true;$('login').hidden=false;if(manual)google.accounts.id.disableAutoSelect()}
+async function syncShots(){let changed=false;try{shots=await api('/shots');await Promise.all(Object.keys(shots).map(async n=>{
  if(imgs[n]&&imgs[n].ts==shots[n])return;const r=await raw('/shot?machine='+encodeURIComponent(n));if(!r.ok)return;
- const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u}}))}catch(e){}}
-function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n);
+ const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u};changed=true}))}catch(e){}return changed}
+function setBusy(n,label,a,ms){clearBusy(n);busy[n]={label,a};if(ms)busy[n].t=setTimeout(()=>{delete busy[n];render()},ms);render()}
+function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
+function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
  const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
- return `<article class="card ${st}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
+ const sp=a=>bz&&bz.a==a?'<i class="spin"></i>':'';
+ return `<article class="card ${st}${bz?' busy':''}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
  ${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:`<div class="ph">${PH}</div>`}
- <span class="chip">${TXT[st]||esc(st)}</span>
- <div class="meta"><span>Ping: ${ago(c.last_ping)}</span><span>${im?'Ảnh: '+ago(im.ts):''}</span></div>${busy[n]?'<div class="wait">Đang chụp…</div>':''}</div>
+ <span class="chip">${TXT[st]||esc(st)}</span>${off?'<div class="off">Mất kết nối</div>':''}
+ <div class="meta"><span>Ping: ${ago(c.last_ping)}</span><span>${im?'Ảnh: '+ago(im.ts):''}</span></div>${bz?`<div class="wait"><i class="spin"></i>${esc(bz.label)}</div>`:''}</div>
  <div class="bd"><h2>${esc(c.name)}</h2>
  <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
- <div class="act"><button class="b" data-a="chup" data-n="${en}">Chụp màn hình</button>
- ${vm?`<button class="b" data-a="mo" data-n="${en}">Mở máy ảo</button><button class="b o" data-a="tamngung" data-n="${en}">Tạm ngưng</button><button class="b o" data-a="tieptuc" data-n="${en}">Tiếp tục</button>`:`<button class="b" data-a="run" data-n="${en}" ${st=='down'?'disabled title="Máy đang tắt"':''}>RUN</button>`}</div></div></article>`}
+ <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Chụp màn hình</button>
+ ${vm?`<button class="b run" data-a="mo" data-n="${en}" aria-label="Mở máy ảo"${dis}>${sp('mo')}RUN</button><button class="b pause" data-a="tamngung" data-n="${en}"${dis}>${sp('tamngung')}Tạm ngưng</button><button class="b" data-a="tieptuc" data-n="${en}"${dis}>${sp('tieptuc')}Tiếp tục</button>`:''}
+ <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
+function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
- $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';render();await syncShots();render()}
+ $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await syncShots();safeRender()}
  catch(e){$('err').textContent=e.message}}
+async function refreshShots(){if(await syncShots())safeRender()}
 async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
-async function waitShot(n){const old=shots[n]||0;busy[n]=true;render();
- for(let k=0;k<12;k++){await new Promise(r=>setTimeout(r,4000));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();busy[n]=false;render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
- busy[n]=false;render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
+async function waitShot(n){const old=shots[n]||0;
+ for(let k=0;k<12;k++){await new Promise(r=>setTimeout(r,4000));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();clearBusy(n);render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
+ clearBusy(n);render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
+async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,okMsg)){if(a=='chup')waitShot(n);else setBusy(n,'Máy đang nhận lệnh…',a,15000)}else{clearBusy(n);render()}}
 async function act(a,n){
- if(a=='chup'){if(await send({cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.'))waitShot(n);return}
- if(a=='mo'||a=='run')return send({cmd:a,machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},(a=='run'?'Đã gửi lệnh RUN cho ':'Đã gửi lệnh mở ')+n+'.');
- if(a=='tamngung')return send({cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.');
- if(a=='tieptuc')return send({cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.')}
+ if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
+ if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
+ if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh mở '+n+'.','Đang gửi lệnh chạy…');
+ if(a=='tamngung')return run(n,a,{cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.','Đang gửi lệnh tạm ngưng…');
+ if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
 function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
  $('dlg').innerHTML=`<h2>${esc(c.name)}: ${TXT[c.status]||esc(c.status)}</h2><dl><dt>Ping cuối</dt><dd>${when(c.last_ping)} (${ago(c.last_ping)})</dd>
  <dt>Ping tới</dt><dd>${when(c.next_ping)}</dd><dt>Số lần ping</dt><dd>${c.n_pings}</dd><dt>Timeout</dt><dd>${dur(c.timeout)}</dd><dt>Grace</dt><dd>${dur(c.grace)}</dd></dl>
- <button class="b o" id="bx">Đóng</button>${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:''}`;$('bx').onclick=()=>$('dlg').close();$('dlg').showModal()}
+ <button class="b" id="bx">Đóng</button>${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:''}`;$('bx').onclick=()=>$('dlg').close();$('dlg').showModal()}
 $('grid').onclick=e=>{const b=e.target.closest('button[data-a]');if(b)return act(b.dataset.a,b.dataset.n);const t=e.target.closest('.th');if(t)detail(+t.dataset.i)};
 $('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))detail(+e.target.dataset.i)};
-$('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(s)localStorage.setItem('vm_'+s.dataset.k+'_'+s.dataset.n,s.dataset.k=='mode'?s.value:s.selectedIndex)};
-$('all').onclick=()=>checks.filter(c=>c.status!='paused').forEach(c=>act('chup',c.name.toLowerCase()));
+$('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(s){localStorage.setItem('vm_'+s.dataset.k+'_'+s.dataset.n,s.dataset.k=='mode'?s.value:s.selectedIndex);s.blur()}};
+$('all').onclick=()=>checks.filter(c=>c.status=='up'||c.status=='grace').forEach(c=>act('chup',c.name.toLowerCase()));
 $('re').onclick=load;$('out').onclick=()=>logout(true);
-async function start(){$('login').hidden=true;$('app').hidden=false;try{cfg=await api('/config')}catch(e){return}await load();clearInterval(timer);timer=setInterval(load,6e4)}
+function setAuto(){clearInterval(autoT);const m=+localStorage.auto||0;if(m)autoT=setInterval(()=>checks.filter(c=>c.status=='up').forEach(c=>api('/command',{method:'POST',body:JSON.stringify({cmd:'chup',machine:c.name.toLowerCase()})}).catch(()=>{})),m*6e4)}
+$('auto').onchange=e=>{localStorage.auto=e.target.value;setAuto();toast(+e.target.value?'Tự chụp mỗi '+e.target.value+' phút. Mỗi lần chụp ảnh cũng được gửi vào nhóm Telegram.':'Đã tắt tự chụp.')};
+async function start(){$('login').hidden=true;$('app').hidden=false;try{cfg=await api('/config')}catch(e){return}$('auto').value=localStorage.auto||'0';await load();
+ clearInterval(timer);timer=setInterval(load,6e4);clearInterval(syncT);syncT=setInterval(refreshShots,2e4);setAuto()}
 window.onload=()=>{google.accounts.id.initialize({client_id:CLIENT_ID,auto_select:true,callback:r=>{localStorage.idt=r.credential;start()}});
  google.accounts.id.renderButton($('gbtn'),{theme:'outline',size:'large',text:'signin_with'});
  if(localStorage.idt)start();else $('login').hidden=false}
