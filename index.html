@@ -55,7 +55,7 @@ function logout(manual){localStorage.removeItem('idt');clearInterval(timer);$('a
 async function syncShots(){try{shots=await api('/shots');await Promise.all(Object.keys(shots).map(async n=>{
  if(imgs[n]&&imgs[n].ts==shots[n])return;const r=await raw('/shot?machine='+encodeURIComponent(n));if(!r.ok)return;
  const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u}}))}catch(e){}}
-function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n);
+function card(c,i){const n=c.name.toLowerCase(),vm=true,im=imgs[n],st=c.status,en=esc(n);
  const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
  return `<article class="card ${st}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
  ${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:`<div class="ph">${PH}</div>`}
