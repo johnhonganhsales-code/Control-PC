@@ -55,15 +55,15 @@ function logout(manual){localStorage.removeItem('idt');clearInterval(timer);$('a
 async function syncShots(){try{shots=await api('/shots');await Promise.all(Object.keys(shots).map(async n=>{
  if(imgs[n]&&imgs[n].ts==shots[n])return;const r=await raw('/shot?machine='+encodeURIComponent(n));if(!r.ok)return;
  const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u}}))}catch(e){}}
-function card(c,i){const n=c.name.toLowerCase(),vm=true,im=imgs[n],st=c.status,en=esc(n);
+function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n);
  const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
  return `<article class="card ${st}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
  ${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:`<div class="ph">${PH}</div>`}
  <span class="chip">${TXT[st]||esc(st)}</span>
  <div class="meta"><span>Ping: ${ago(c.last_ping)}</span><span>${im?'Ảnh: '+ago(im.ts):''}</span></div>${busy[n]?'<div class="wait">Đang chụp…</div>':''}</div>
  <div class="bd"><h2>${esc(c.name)}</h2>
- ${vm?`<div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
- <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>`:''}
+ <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
+ <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
  <div class="act"><button class="b" data-a="chup" data-n="${en}">Chụp màn hình</button>
  ${vm?`<button class="b" data-a="mo" data-n="${en}">Mở máy ảo</button><button class="b o" data-a="tamngung" data-n="${en}">Tạm ngưng</button><button class="b o" data-a="tieptuc" data-n="${en}">Tiếp tục</button>`:''}</div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
