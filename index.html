@@ -4,12 +4,12 @@
 <title>Máy của Tiến</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-:root{--ink:#f4f6ff;--mut:#b9bfe6;--ok:#4ade80;--down:#ff5d5d;--warn:#ffa94d;--idle:#a5b4fc;--glass:rgba(255,255,255,.09);--edge:rgba(255,255,255,.2)}
+:root{--ink:#f4f6ff;--mut:#b9bfe6;--ok:#4ade80;--down:#ff5d5d;--warn:#ffa94d;--idle:#a5b4fc;--glass:rgba(255,255,255,.05);--edge:rgba(255,255,255,.32);--sheen:linear-gradient(115deg,rgba(255,255,255,.2) 0%,rgba(255,255,255,.06) 40%,rgba(255,255,255,0) 40.2%,rgba(255,255,255,.03) 100%)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;color:var(--ink);font:15px/1.4 system-ui,"Segoe UI",sans-serif;
- background:radial-gradient(60% 50% at 12% 8%,#7c3aed99,transparent 70%),radial-gradient(50% 45% at 92% 18%,#06b6d488,transparent 70%),radial-gradient(60% 50% at 70% 100%,#2563eb88,transparent 70%),linear-gradient(135deg,#1a1245,#241a6b 45%,#0b3b66);background-attachment:fixed}
-.glass{background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--edge)}
-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 18px 0;padding:12px 16px;border-radius:18px;box-shadow:0 8px 32px #0004,inset 0 1px 0 #ffffff30}
+body{margin:0;text-shadow:0 1px 2px #0007;min-height:100vh;color:var(--ink);font:15px/1.4 system-ui,"Segoe UI",sans-serif;
+ background:radial-gradient(60% 50% at 12% 8%,#5b7fbf40,transparent 70%),radial-gradient(50% 45% at 92% 18%,#2fa8b840,transparent 70%),radial-gradient(60% 50% at 70% 100%,#3b6fb440,transparent 70%),linear-gradient(135deg,#0e1a2e,#14263f 45%,#0c2a38);background-attachment:fixed}
+.glass{background:var(--sheen),var(--glass);-webkit-backdrop-filter:blur(10px) saturate(120%);backdrop-filter:blur(10px) saturate(120%);border:1px solid var(--edge)}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:16px 18px 0;padding:12px 16px;border-radius:12px;box-shadow:0 0 0 1px #0006,0 8px 24px #0005,inset 0 0 0 1px #ffffff26,inset 0 1px 0 #ffffff55}
 h1{font-size:1.15rem;margin:0;flex:1;display:flex;align-items:center;gap:10px}
 h1 svg{color:#a5b4fc}
 .sum{color:var(--mut);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
@@ -17,11 +17,11 @@ h1 svg{color:#a5b4fc}
 .auto{display:flex;align-items:center;gap:6px;color:var(--mut);font-size:.9rem}
 #err{color:#ffb4b4;padding:8px 18px}
 #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;padding:18px}
-.card{--glow:#a5b4fc;background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(140%);backdrop-filter:blur(18px) saturate(140%);border:1px solid var(--edge);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 32px #0005,inset 0 1px 0 #ffffff30;transition:box-shadow .25s,border-color .25s}
+.card{--glow:#a5b4fc;background:var(--sheen),var(--glass);-webkit-backdrop-filter:blur(10px) saturate(120%);backdrop-filter:blur(10px) saturate(120%);border:1px solid var(--edge);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 1px #0006,0 8px 24px #0005,inset 0 0 0 1px #ffffff26,inset 0 1px 0 #ffffff55;transition:box-shadow .25s,border-color .25s}
 .card.up{--glow:var(--ok)}.card.grace{--glow:var(--warn)}.card.down{--glow:var(--down)}
-.card.down{background:rgba(255,70,70,.13);border-color:#ff5d5d88;box-shadow:0 8px 32px #0005,0 0 26px -8px var(--down),inset 0 1px 0 #ffffff30}
+.card.down{background:var(--sheen),rgba(255,70,70,.10);border-color:#ff5d5d88;box-shadow:0 8px 32px #0005,0 0 26px -8px var(--down),inset 0 1px 0 #ffffff30}
 .card:hover{border-color:var(--glow);box-shadow:0 8px 32px #0005,0 0 0 1px var(--glow),0 0 30px -2px var(--glow),inset 0 1px 0 #ffffff30}
-.th{position:relative;aspect-ratio:16/9;margin:10px 10px 0;border-radius:12px;overflow:hidden;background:rgba(8,6,30,.55);border:1px solid var(--edge);cursor:pointer}
+.th{position:relative;aspect-ratio:16/9;margin:10px 10px 0;border-radius:8px;overflow:hidden;background:rgba(8,12,30,.3);border:1px solid var(--edge);cursor:pointer}
 .th img{width:100%;height:100%;object-fit:cover;display:block}
 .down .th img{filter:grayscale(1) brightness(.55)}
 .ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--mut);text-align:center;padding:0 12px}
@@ -40,11 +40,11 @@ h1 svg{color:#a5b4fc}
 @keyframes sp{to{transform:rotate(360deg)}}@keyframes blink{50%{opacity:.25}}
 .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}h2{font-size:1.02rem;margin:0}
 .sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--edge);background:rgba(10,8,40,.45);color:var(--ink);min-width:0}
+select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--edge);background:rgba(8,12,30,.3);color:var(--ink);min-width:0}
 select option{background:#1d1b4b;color:#fff}
 .act{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
-.b{font:inherit;font-weight:600;padding:9px 14px;border-radius:10px;border:1px solid var(--edge);background:rgba(255,255,255,.14);color:var(--ink);cursor:pointer;transition:background .2s,box-shadow .2s}
-.b:hover:not(:disabled){background:rgba(255,255,255,.25)}
+.b{font:inherit;font-weight:600;padding:9px 14px;border-radius:8px;border:1px solid var(--edge);background:linear-gradient(rgba(255,255,255,.28),rgba(255,255,255,.06) 50%,rgba(255,255,255,.02) 51%,rgba(255,255,255,.12));color:var(--ink);cursor:pointer;transition:background .2s,box-shadow .2s}
+.b:hover:not(:disabled){filter:brightness(1.25)}
 .b.run{background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#4ade80;color:#04210f}
 .b.run:hover:not(:disabled){background:linear-gradient(135deg,#34d36f,#1fb457);box-shadow:0 0 18px #22c55e88}
 .b.pause{background:linear-gradient(135deg,#fb923c,#f97316);border-color:#fdba74;color:#2b1100}
@@ -56,7 +56,7 @@ select option{background:#1d1b4b;color:#fff}
 .b.run .spin,.b.pause .spin{border-color:#0004;border-top-color:#000}
 .b:focus-visible,select:focus-visible,.th:focus-visible{outline:3px solid #c4b5fd;outline-offset:2px}
 #login{text-align:center;margin:80px auto;max-width:420px;padding:32px 24px;border-radius:20px}
-dialog{width:min(900px,96vw);background:rgba(28,22,80,.78);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);color:var(--ink);border:1px solid var(--edge);border-radius:20px;padding:18px}
+dialog{width:min(900px,96vw);background:var(--sheen),rgba(20,30,60,.6);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--ink);border:1px solid var(--edge);border-radius:20px;padding:18px}
 dialog::backdrop{background:#0008}
 dialog img{width:100%;border-radius:12px;display:block;margin-top:10px}
 dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0}dt{color:var(--mut)}dd{margin:0}
