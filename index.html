@@ -76,7 +76,7 @@ const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='6168
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
 const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
 const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
-const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='';
+const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
 function ago(s){if(!s)return'chưa có';const m=Math.round((Date.now()-new Date(s))/6e4);return m<1?'vừa xong':m<60?m+' phút trước':m<1440?Math.floor(m/60)+' giờ trước':Math.floor(m/1440)+' ngày trước'}
@@ -91,7 +91,7 @@ async function syncShots(){let changed=false;try{shots=await api('/shots');await
 function setBusy(n,label,a,ms){clearBusy(n);busy[n]={label,a};if(ms)busy[n].t=setTimeout(()=>{delete busy[n];render()},ms);render()}
 function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
 function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
- const own=localStorage.getItem('bg_'+n),bg=own||localStorage.getItem('bg_default'),showShot=im&&(!bg||(fresh[n]||0)>Date.now());
+ const own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
  const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
  const sp=a=>bz&&bz.a==a?'<i class="spin"></i>':'';
  return `<article class="card ${st}${bz?' busy':''}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
@@ -109,7 +109,7 @@ function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
- $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await syncShots();safeRender()}
+ $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs()]);updDef();safeRender()}
  catch(e){$('err').textContent=e.message}}
 async function refreshShots(){if(await syncShots())safeRender()}
 async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
@@ -119,7 +119,7 @@ async function waitShot(n){const old=shots[n]||0;
 async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,okMsg)){if(a=='chup')waitShot(n);else setBusy(n,'Máy đang nhận lệnh…',a,15000)}else{clearBusy(n);render()}}
 async function act(a,n){
  if(a=='bg'){bgTarget=n;$('bgf').click();return}
- if(a=='bgx'){localStorage.removeItem('bg_'+n);render();return}
+ if(a=='bgx')return delBg(n);
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
  if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
  if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh mở '+n+'.','Đang gửi lệnh chạy…');
@@ -134,16 +134,23 @@ $('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))det
 $('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(s){localStorage.setItem('vm_'+s.dataset.k+'_'+s.dataset.n,s.dataset.k=='mode'?s.value:s.selectedIndex);s.blur()}};
 $('all').onclick=()=>checks.filter(c=>c.status=='up'||c.status=='grace').forEach(c=>act('chup',c.name.toLowerCase()));
 $('re').onclick=load;$('out').onclick=()=>logout(true);
-function shrink(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,960/i.width),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.82))};i.onerror=()=>{URL.revokeObjectURL(u);rej(Error('file không phải ảnh'))};i.src=u})}
-function updDef(){$('bgallx').hidden=!localStorage.getItem('bg_default')}
+function shrink(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,960/i.width),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(x=>x?res(x):rej(Error('không xử lý được ảnh')),'image/jpeg',.82)};i.onerror=()=>{URL.revokeObjectURL(u);rej(Error('file không phải ảnh'))};i.src=u})}
+async function putBg(n,blob){const r=await raw('/bg?machine='+encodeURIComponent(n),{method:'POST',body:blob});if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.error||r.status)}}
+async function delBg(n){try{const r=await raw('/bg?machine='+encodeURIComponent(n),{method:'DELETE'});if(!r.ok)throw Error(r.status);await syncBgs();updDef();render()}catch(e){toast('Xóa ảnh nền lỗi: '+e.message)}}
+async function syncBgs(){let ch=false;try{const idx=await api('/bgs');
+ for(const n of Object.keys(bgImgs))if(!(n in idx)){URL.revokeObjectURL(bgImgs[n].url);delete bgImgs[n];ch=true}
+ await Promise.all(Object.keys(idx).map(async n=>{if(bgImgs[n]&&bgImgs[n].ts==idx[n])return;const r=await raw('/bg?machine='+encodeURIComponent(n));if(!r.ok)return;
+  const u=URL.createObjectURL(await r.blob());if(bgImgs[n])URL.revokeObjectURL(bgImgs[n].url);bgImgs[n]={ts:idx[n],url:u};ch=true}))}catch(e){}return ch}
+async function migrateBg(){for(const k of Object.keys(localStorage).filter(k=>k.startsWith('bg_'))){try{await putBg(k.slice(3),await(await fetch(localStorage.getItem(k))).blob());localStorage.removeItem(k)}catch(e){}}}
+function updDef(){$('bgallx').hidden=!bgImgs._default}
 $('bgall').onclick=()=>{bgTarget='_default';$('bgf').click()};
-$('bgallx').onclick=()=>{localStorage.removeItem('bg_default');updDef();render()};
+$('bgallx').onclick=()=>delBg('_default');
 $('bgf').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
- try{localStorage.setItem('bg_'+bgTarget,await shrink(f));updDef();render();toast('Đã đặt ảnh nền.')}
- catch(err){toast('Không lưu được ảnh nền: '+(err.name=='QuotaExceededError'?'bộ nhớ trình duyệt đã đầy':err.message))}};
+ try{await putBg(bgTarget,await shrink(f));await syncBgs();updDef();render();toast('Đã lưu ảnh nền lên máy chủ.')}
+ catch(err){toast('Không lưu được ảnh nền: '+err.message)}};
 function setAuto(){clearInterval(autoT);const m=+localStorage.auto||0;if(m)autoT=setInterval(()=>checks.filter(c=>c.status=='up').forEach(c=>api('/command',{method:'POST',body:JSON.stringify({cmd:'chup',machine:c.name.toLowerCase()})}).catch(()=>{})),m*6e4)}
 $('auto').onchange=e=>{localStorage.auto=e.target.value;setAuto();toast(+e.target.value?'Tự chụp mỗi '+e.target.value+' phút. Mỗi lần chụp ảnh cũng được gửi vào nhóm Telegram.':'Đã tắt tự chụp.')};
-async function start(){$('login').hidden=true;$('app').hidden=false;try{cfg=await api('/config')}catch(e){return}$('auto').value=localStorage.auto||'0';updDef();await load();
+async function start(){$('login').hidden=true;$('app').hidden=false;try{cfg=await api('/config')}catch(e){return}$('auto').value=localStorage.auto||'0';await migrateBg();await load();
  clearInterval(timer);timer=setInterval(load,6e4);clearInterval(syncT);syncT=setInterval(refreshShots,2e4);setAuto()}
 window.onload=()=>{google.accounts.id.initialize({client_id:CLIENT_ID,auto_select:true,callback:r=>{localStorage.idt=r.credential;start()}});
  google.accounts.id.renderButton($('gbtn'),{theme:'outline',size:'large',text:'signin_with'});
