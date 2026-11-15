@@ -106,7 +106,7 @@ function optsHtml(n,mode){const sc=(cfg.schema||{})[mode];if(!sc)return'';const 
   return `<label class="ow">${esc(l)}<input ${a} ${t=='n'?'type="number" min="'+lo+'" max="'+hi+'"':'maxlength="32"'} value="${v==null?'':esc(String(v))}"></label>`}).join('')+'</div></details>'}
 function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
  const pz=vm&&paused[n],own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
- const ch=vm&&choices[n],sm=ch?+ch.mode:(+localStorage.getItem('vm_mode_'+n)||9),sa=ch?Math.max(0,cfg.accounts.indexOf(ch.acc)):(+localStorage.getItem('vm_acc_'+n)||0);
+ const ch=choices[n],sm=ch?+ch.mode:(+localStorage.getItem('vm_mode_'+n)||9),sa=ch?Math.max(0,cfg.accounts.indexOf(ch.acc)):(+localStorage.getItem('vm_acc_'+n)||0);
  const sp=a=>bz&&bz.a==a?'<i class="spin"></i>':'';
  return `<article class="card ${st}${bz?' busy':''}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
  ${showShot?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:bg?`<img src="${bg}" alt="">`:`<div class="ph">${PH}</div>`}
@@ -132,7 +132,7 @@ async function load(){try{$('err').textContent='';checks=(await api('/checks')).
 // Che do + tai khoan cua may ao luu tren worker, may ao se doc lai luc khoi dong.
 function curChoice(n){const ch=choices[n];if(ch)return{mode:+ch.mode,acc:ch.acc,opts:getOpts(n,+ch.mode)};const mode=+(localStorage.getItem('vm_mode_'+n)||9);return{mode,acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)],opts:getOpts(n,mode)}}
 async function syncChoices(){try{choices=await api('/choices')}catch(e){}}
-async function seedChoices(){for(const n of cfg.vms){if(choices[n])continue;const c=curChoice(n);if(!c.acc)continue;
+async function seedChoices(){for(const n of checks.map(c=>c.name.toLowerCase())){if(choices[n])continue;const c=curChoice(n);if(!c.acc)continue;
  try{await api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:c.mode,acc:c.acc,opts:c.opts})});choices[n]=c}catch(e){}}}
 async function syncPaused(){try{paused=await api('/paused')}catch(e){}}
 async function refreshShots(){if(await syncShots())safeRender()}
@@ -160,14 +160,14 @@ $('grid').addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.class
 $('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))detail(+e.target.dataset.i)};
 $('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(!s)return;const n=s.dataset.n;
  localStorage.setItem('vm_'+s.dataset.k+'_'+n,s.dataset.k=='mode'?s.value:s.selectedIndex);
- if(cfg.vms.includes(n)){const cd=s.closest('.card'),mode=+cd.querySelector('select[data-k=mode]').value,acc=cfg.accounts[cd.querySelector('select[data-k=acc]').selectedIndex];
-  const opts=getOpts(n,mode);choices[n]={mode,acc,opts};api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode,acc,opts})}).then(()=>toast('Đã lưu lựa chọn cho '+n+'. Máy ảo sẽ dùng lựa chọn này khi khởi động.')).catch(er=>toast('Lưu lựa chọn lỗi: '+er.message))}
+ {const cd=s.closest('.card'),mode=+cd.querySelector('select[data-k=mode]').value,acc=cfg.accounts[cd.querySelector('select[data-k=acc]').selectedIndex];
+  const opts=getOpts(n,mode);choices[n]={mode,acc,opts};api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode,acc,opts})}).then(()=>toast('Đã lưu lựa chọn cho '+n+'.'+(cfg.vms.includes(n)?' Máy ảo sẽ dùng lựa chọn này khi khởi động.':' Web và điện thoại đều thấy.'))).catch(er=>toast('Lưu lựa chọn lỗi: '+er.message))}
  s.blur();render()};
 $('grid').addEventListener('change',e=>{const i=e.target.closest('[data-o]');if(!i)return;const n=i.dataset.n,m=+i.dataset.m,o=getOpts(n,m);
  const v=i.type=='checkbox'?i.checked:i.dataset.t=='t'?(i.value?(+i.value.slice(0,2))*60+(+i.value.slice(3,5)):''):i.value.trim();
  if(v==='')delete o[i.dataset.o];else o[i.dataset.o]=i.dataset.t=='n'?+v:v;
  localStorage.setItem('opt_'+n+'_'+m,JSON.stringify(o));
- if(cfg.vms.includes(n)){const ch=choices[n]||curChoice(n);choices[n]={mode:ch.mode,acc:ch.acc,opts:o};
+ {const ch=choices[n]||curChoice(n);choices[n]={mode:ch.mode,acc:ch.acc,opts:o};
   api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:ch.mode,acc:ch.acc,opts:o})}).then(()=>toast('Đã lưu cài đặt cho '+n+'.')).catch(er=>toast('Lưu cài đặt lỗi: '+er.message))}});
 $('all').onclick=()=>checks.filter(c=>c.status=='up'||c.status=='grace').forEach(c=>act('chup',c.name.toLowerCase()));
 $('re').onclick=load;$('out').onclick=()=>logout(true);
