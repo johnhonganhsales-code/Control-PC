@@ -40,6 +40,7 @@ h1 svg{color:#a5b4fc}
 @keyframes sp{to{transform:rotate(360deg)}}@keyframes blink{50%{opacity:.25}}
 .bd{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;flex:1}h2{font-size:1.02rem;margin:0}
 .sel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts{display:flex;flex-wrap:wrap;gap:6px 10px;margin:2px 0 8px;font-size:.82rem}.ob{display:flex;align-items:center;gap:4px}.ow{display:flex;flex-direction:column;gap:2px;flex:1 1 90px}.ow input,.ow textarea{font:inherit;padding:4px 6px;border-radius:6px;border:1px solid var(--edge);background:rgba(255,255,255,.08);color:var(--ink);width:100%;box-sizing:border-box}
 select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--edge);background:rgba(8,12,30,.3);color:var(--ink);min-width:0}
 select option{background:#1d1b4b;color:#fff}
 .act{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
@@ -95,6 +96,14 @@ async function syncShots(){let changed=false;try{shots=await api('/shots');await
  const u=URL.createObjectURL(await r.blob());if(imgs[n])URL.revokeObjectURL(imgs[n].url);imgs[n]={ts:shots[n],url:u};changed=true;if(inited){fresh[n]=Date.now()+1e4;setTimeout(safeRender,10100)}}));inited=true}catch(e){}return changed}
 function setBusy(n,label,a,ms){clearBusy(n);busy[n]={label,a};if(ms)busy[n].t=setTimeout(()=>{delete busy[n];render()},ms);render()}
 function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
+const T2M=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+function getOpts(n,mode){const c=choices[n];if(c&&c.mode==mode&&c.opts)return c.opts;try{return JSON.parse(localStorage.getItem('opt_'+n+'_'+mode))||{}}catch(e){return{}}}
+function optsHtml(n,mode){const sc=(cfg.schema||{})[mode];if(!sc)return'';const o=getOpts(n,mode),en=esc(n);
+ return '<div class="opts">'+sc.map(([k,t,l,lo,hi])=>{const v=o[k],a=`data-o="${k}" data-t="${t}" data-n="${en}" data-m="${mode}"`;
+  if(t=='b')return `<label class="ob"><input type="checkbox" ${a} ${v?'checked':''}>${esc(l)}</label>`;
+  if(t=='x')return `<label class="ow">${esc(l)}<textarea ${a} rows="2" maxlength="900">${esc(v||'')}</textarea></label>`;
+  if(t=='t')return `<label class="ow">${esc(l)}<input type="time" ${a} value="${v==null?'':T2M(v)}"></label>`;
+  return `<label class="ow">${esc(l)}<input ${a} ${t=='n'?'type="number" min="'+lo+'" max="'+hi+'"':'maxlength="32"'} value="${v==null?'':esc(String(v))}"></label>`}).join('')+'</div>'}
 function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
  const pz=vm&&paused[n],own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
  const ch=vm&&choices[n],sm=ch?+ch.mode:(+localStorage.getItem('vm_mode_'+n)||9),sa=ch?Math.max(0,cfg.accounts.indexOf(ch.acc)):(+localStorage.getItem('vm_acc_'+n)||0);
@@ -107,6 +116,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <div class="bd"><h2>${esc(c.name)}</h2>
  <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
+  ${optsHtml(n,sm)}
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Cap</button>
  <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
  ${vm?`<button class="b ${pz?'pause on':'resume'}" data-a="${pz?'tieptuc':'tamngung'}" data-n="${en}" aria-pressed="${!!pz}" title="${pz?'Bấm để tiếp tục':'Bấm để tạm ngưng'}">${sp(pz?'tieptuc':'tamngung')}${pz?'Đã tạm ngưng':'Đang chạy'}</button>`:''}
@@ -114,16 +124,16 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
   <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
-function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
+function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select,#grid input,#grid textarea'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
  $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs(),syncPaused(),syncChoices()]);await seedChoices();updDef();safeRender()}
  catch(e){$('err').textContent=e.message}}
 // Che do + tai khoan cua may ao luu tren worker, may ao se doc lai luc khoi dong.
-function curChoice(n){const ch=choices[n];if(ch)return{mode:+ch.mode,acc:ch.acc};return{mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]}}
+function curChoice(n){const ch=choices[n];if(ch)return{mode:+ch.mode,acc:ch.acc,opts:getOpts(n,+ch.mode)};const mode=+(localStorage.getItem('vm_mode_'+n)||9);return{mode,acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)],opts:getOpts(n,mode)}}
 async function syncChoices(){try{choices=await api('/choices')}catch(e){}}
 async function seedChoices(){for(const n of cfg.vms){if(choices[n])continue;const c=curChoice(n);if(!c.acc)continue;
- try{await api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:c.mode,acc:c.acc})});choices[n]=c}catch(e){}}}
+ try{await api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:c.mode,acc:c.acc,opts:c.opts})});choices[n]=c}catch(e){}}}
 async function syncPaused(){try{paused=await api('/paused')}catch(e){}}
 async function refreshShots(){if(await syncShots())safeRender()}
 async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
@@ -150,8 +160,14 @@ $('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))det
 $('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(!s)return;const n=s.dataset.n;
  localStorage.setItem('vm_'+s.dataset.k+'_'+n,s.dataset.k=='mode'?s.value:s.selectedIndex);
  if(cfg.vms.includes(n)){const cd=s.closest('.card'),mode=+cd.querySelector('select[data-k=mode]').value,acc=cfg.accounts[cd.querySelector('select[data-k=acc]').selectedIndex];
-  choices[n]={mode,acc};api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode,acc})}).then(()=>toast('Đã lưu lựa chọn cho '+n+'. Máy ảo sẽ dùng lựa chọn này khi khởi động.')).catch(er=>toast('Lưu lựa chọn lỗi: '+er.message))}
- s.blur()};
+  const opts=getOpts(n,mode);choices[n]={mode,acc,opts};api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode,acc,opts})}).then(()=>toast('Đã lưu lựa chọn cho '+n+'. Máy ảo sẽ dùng lựa chọn này khi khởi động.')).catch(er=>toast('Lưu lựa chọn lỗi: '+er.message))}
+ s.blur();render()};
+$('grid').addEventListener('change',e=>{const i=e.target.closest('[data-o]');if(!i)return;const n=i.dataset.n,m=+i.dataset.m,o=getOpts(n,m);
+ const v=i.type=='checkbox'?i.checked:i.dataset.t=='t'?(i.value?(+i.value.slice(0,2))*60+(+i.value.slice(3,5)):''):i.value.trim();
+ if(v==='')delete o[i.dataset.o];else o[i.dataset.o]=i.dataset.t=='n'?+v:v;
+ localStorage.setItem('opt_'+n+'_'+m,JSON.stringify(o));
+ if(cfg.vms.includes(n)){const ch=choices[n]||curChoice(n);choices[n]={mode:ch.mode,acc:ch.acc,opts:o};
+  api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:ch.mode,acc:ch.acc,opts:o})}).then(()=>toast('Đã lưu cài đặt cho '+n+'.')).catch(er=>toast('Lưu cài đặt lỗi: '+er.message))}});
 $('all').onclick=()=>checks.filter(c=>c.status=='up'||c.status=='grace').forEach(c=>act('chup',c.name.toLowerCase()));
 $('re').onclick=load;$('out').onclick=()=>logout(true);
 function shrink(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,960/i.width),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(x=>x?res(x):rej(Error('không xử lý được ảnh')),'image/jpeg',.82)};i.onerror=()=>{URL.revokeObjectURL(u);rej(Error('file không phải ảnh'))};i.src=u})}
