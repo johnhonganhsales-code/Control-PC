@@ -52,6 +52,9 @@ select option{background:#1d1b4b;color:#fff}
 .b.d{background:rgba(255,93,93,.14);color:#ffc2c2;border-color:#ff5d5d99}
 .b.d:hover:not(:disabled){background:rgba(255,93,93,.28)}
 .b:disabled{opacity:.4;cursor:not-allowed}
+.b.pw{background:linear-gradient(135deg,#38bdf8,#2563eb);border-color:#7dd3fc;color:#04122b;text-shadow:0 1px 0 #fff4}
+.b.pw:hover:not(:disabled){box-shadow:0 0 18px #38bdf888}
+.b.pw .spin{border-color:#0004;border-top-color:#000}
 .b.pause.on{box-shadow:0 0 0 2px #fdba74,0 0 16px #f9731688}
 .b.resume{border-color:#4ade80;box-shadow:0 0 14px #4ade8055}
 .card.busy .b:not([data-a=tamngung]):not([data-a=tieptuc]){pointer-events:none;opacity:.6}
@@ -107,6 +110,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Chụp màn hình</button>
  <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
  ${vm?`<button class="b pause${pz?' on':''}" data-a="tamngung" data-n="${en}" aria-pressed="${!!pz}">${sp('tamngung')}${pz?'Đã tạm ngưng':'Tạm ngưng'}</button><button class="b${pz?' resume':''}" data-a="tieptuc" data-n="${en}">${sp('tieptuc')}Tiếp tục</button>`:''}
+ ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
@@ -125,10 +129,11 @@ async function act(a,n){
  if(a=='bg'){bgTarget=n;$('bgf').click();return}
  if(a=='bgx')return delBg(n);
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
+ if(a=='bat')return run(n,a,{cmd:'bat',machine:n},'Đã gửi lệnh bật '+n+'.','Đang gửi lệnh bật máy…');
  if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
  if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh chạy '+n+'.','Đang gửi lệnh chạy…');
  if(a=='tamngung')return run(n,a,{cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.','Đang gửi lệnh tạm ngưng…');
- if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
+ if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
 function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
  $('dlg').innerHTML=`<h2>${esc(c.name)}: ${TXT[c.status]||esc(c.status)}</h2><dl><dt>Ping cuối</dt><dd>${when(c.last_ping)} (${ago(c.last_ping)})</dd>
  <dt>Ping tới</dt><dd>${when(c.next_ping)}</dd><dt>Số lần ping</dt><dd>${c.n_pings}</dd><dt>Timeout</dt><dd>${dur(c.timeout)}</dd><dt>Grace</dt><dd>${dur(c.grace)}</dd></dl>
