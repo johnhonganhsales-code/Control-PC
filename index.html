@@ -81,7 +81,7 @@ const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='6168
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
 const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
 const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
-const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={},paused={};
+const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={},paused={},choices={};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
 function ago(s){if(!s)return'chưa có';const m=Math.round((Date.now()-new Date(s))/6e4);return m<1?'vừa xong':m<60?m+' phút trước':m<1440?Math.floor(m/60)+' giờ trước':Math.floor(m/1440)+' ngày trước'}
@@ -97,7 +97,7 @@ function setBusy(n,label,a,ms){clearBusy(n);busy[n]={label,a};if(ms)busy[n].t=se
 function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
 function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n],st=c.status,en=esc(n),bz=busy[n],off=st=='down',dis=off?' disabled title="Máy đang Offline"':'';
  const pz=vm&&paused[n],own=bgImgs[n],bg=(own||bgImgs._default||{}).url,showShot=im&&(!bg||(fresh[n]||0)>Date.now());
- const sm=+localStorage.getItem('vm_mode_'+n)||9,sa=+localStorage.getItem('vm_acc_'+n)||0;
+ const ch=vm&&choices[n],sm=ch?+ch.mode:(+localStorage.getItem('vm_mode_'+n)||9),sa=ch?Math.max(0,cfg.accounts.indexOf(ch.acc)):(+localStorage.getItem('vm_acc_'+n)||0);
  const sp=a=>bz&&bz.a==a?'<i class="spin"></i>':'';
  return `<article class="card ${st}${bz?' busy':''}"><div class="th" data-i="${i}" tabindex="0" role="button" aria-label="Xem chi tiết ${esc(c.name)}">
  ${showShot?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:bg?`<img src="${bg}" alt="">`:`<div class="ph">${PH}</div>`}
@@ -109,15 +109,20 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Chụp màn hình</button>
  <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
- ${vm?`<button class="b pause${pz?' on':''}" data-a="tamngung" data-n="${en}" aria-pressed="${!!pz}">${sp('tamngung')}${pz?'Đã tạm ngưng':'Tạm ngưng'}</button><button class="b${pz?' resume':''}" data-a="tieptuc" data-n="${en}">${sp('tieptuc')}Tiếp tục</button>`:''}
+ ${vm?`<button class="b ${pz?'pause on':'resume'}" data-a="${pz?'tieptuc':'tamngung'}" data-n="${en}" aria-pressed="${!!pz}" title="${pz?'Bấm để tiếp tục':'Bấm để tạm ngưng'}">${sp(pz?'tieptuc':'tamngung')}${pz?'Đã tạm ngưng':'Đang chạy'}</button>`:''}
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
  checks.sort((a,b)=>(SEV[a.status]??5)-(SEV[b.status]??5)||a.name.localeCompare(b.name));
- $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs(),syncPaused()]);updDef();safeRender()}
+ $('sum').textContent='Đang mở: '+checks.filter(c=>c.status=='up').length+' / '+checks.length+' máy';safeRender();await Promise.all([syncShots(),syncBgs(),syncPaused(),syncChoices()]);await seedChoices();updDef();safeRender()}
  catch(e){$('err').textContent=e.message}}
+// Che do + tai khoan cua may ao luu tren worker, may ao se doc lai luc khoi dong.
+function curChoice(n){const ch=choices[n];if(ch)return{mode:+ch.mode,acc:ch.acc};return{mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]}}
+async function syncChoices(){try{choices=await api('/choices')}catch(e){}}
+async function seedChoices(){for(const n of cfg.vms){if(choices[n])continue;const c=curChoice(n);if(!c.acc)continue;
+ try{await api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:c.mode,acc:c.acc})});choices[n]=c}catch(e){}}}
 async function syncPaused(){try{paused=await api('/paused')}catch(e){}}
 async function refreshShots(){if(await syncShots())safeRender()}
 async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
@@ -131,16 +136,20 @@ async function act(a,n){
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
  if(a=='bat')return run(n,a,{cmd:'bat',machine:n},'Đã gửi lệnh bật '+n+'.','Đang gửi lệnh bật máy…');
  if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
- if(a=='mo')return run(n,a,{cmd:'mo',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh chạy '+n+'.','Đang gửi lệnh chạy…');
+ if(a=='mo')return run(n,a,{cmd:'mo',machine:n,...curChoice(n)},'Đã gửi lệnh chạy '+n+'.','Đang gửi lệnh chạy…');
  if(a=='tamngung')return run(n,a,{cmd:'tamngung',machine:n},'Đã gửi lệnh tạm ngưng '+n+'.','Đang gửi lệnh tạm ngưng…');
- if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n,mode:+(localStorage.getItem('vm_mode_'+n)||9),acc:cfg.accounts[+(localStorage.getItem('vm_acc_'+n)||0)]},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
+ if(a=='tieptuc')return run(n,a,{cmd:'tieptuc',machine:n,...curChoice(n)},'Đã gửi lệnh tiếp tục '+n+'.','Đang gửi lệnh tiếp tục…')}
 function detail(i){const c=checks[i],im=imgs[c.name.toLowerCase()];
  $('dlg').innerHTML=`<h2>${esc(c.name)}: ${TXT[c.status]||esc(c.status)}</h2><dl><dt>Ping cuối</dt><dd>${when(c.last_ping)} (${ago(c.last_ping)})</dd>
  <dt>Ping tới</dt><dd>${when(c.next_ping)}</dd><dt>Số lần ping</dt><dd>${c.n_pings}</dd><dt>Timeout</dt><dd>${dur(c.timeout)}</dd><dt>Grace</dt><dd>${dur(c.grace)}</dd></dl>
  <button class="b" id="bx">Đóng</button>${im?`<img src="${im.url}" alt="Màn hình ${esc(c.name)}">`:''}`;$('bx').onclick=()=>$('dlg').close();$('dlg').showModal()}
 $('grid').onclick=e=>{const b=e.target.closest('button[data-a]');if(b)return act(b.dataset.a,b.dataset.n);const t=e.target.closest('.th');if(t)detail(+t.dataset.i)};
 $('grid').onkeydown=e=>{if(e.key=='Enter'&&e.target.classList.contains('th'))detail(+e.target.dataset.i)};
-$('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(s){localStorage.setItem('vm_'+s.dataset.k+'_'+s.dataset.n,s.dataset.k=='mode'?s.value:s.selectedIndex);s.blur()}};
+$('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(!s)return;const n=s.dataset.n;
+ localStorage.setItem('vm_'+s.dataset.k+'_'+n,s.dataset.k=='mode'?s.value:s.selectedIndex);
+ if(cfg.vms.includes(n)){const cd=s.closest('.card'),mode=+cd.querySelector('select[data-k=mode]').value,acc=cfg.accounts[cd.querySelector('select[data-k=acc]').selectedIndex];
+  choices[n]={mode,acc};api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode,acc})}).then(()=>toast('Đã lưu lựa chọn cho '+n+'. Máy ảo sẽ dùng lựa chọn này khi khởi động.')).catch(er=>toast('Lưu lựa chọn lỗi: '+er.message))}
+ s.blur()};
 $('all').onclick=()=>checks.filter(c=>c.status=='up'||c.status=='grace').forEach(c=>act('chup',c.name.toLowerCase()));
 $('re').onclick=load;$('out').onclick=()=>logout(true);
 function shrink(f){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,960/i.width),c=document.createElement('canvas');c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(x=>x?res(x):rej(Error('không xử lý được ảnh')),'image/jpeg',.82)};i.onerror=()=>{URL.revokeObjectURL(u);rej(Error('file không phải ảnh'))};i.src=u})}
