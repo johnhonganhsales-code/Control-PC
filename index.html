@@ -118,7 +118,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
   ${optsHtml(n,sm)}
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Cap</button>
- <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
+ <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${vm?' title="Mở máy ảo (đang mở thì chạy bot theo chế độ + tài khoản trên app)"':dis}>${sp('mo')}RUN</button>
  ${vm?`<button class="b ${pz?'pause on':'resume'}" data-a="${pz?'tieptuc':'tamngung'}" data-n="${en}" aria-pressed="${!!pz}" title="${pz?'Bấm để tiếp tục':'Bấm để tạm ngưng'}">${sp(pz?'tieptuc':'tamngung')}${pz?'Đã tạm ngưng':'Đang chạy'}</button>`:''}
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
