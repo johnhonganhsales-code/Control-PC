@@ -80,7 +80,7 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0}dt{col
 const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='616827327363-30v6rgsuscl0pjf8j8ep2g439tsu7lcn.apps.googleusercontent.com';
 const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
 const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
-const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Chụp màn hình.</span>';
+const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Cap.</span>';
 const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={},paused={},choices={};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(e.t);e.t=setTimeout(()=>e.style.display='none',4500)}
@@ -107,11 +107,12 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <div class="bd"><h2>${esc(c.name)}</h2>
  <div class="sel"><select data-k="mode" data-n="${en}" aria-label="Chế độ bot">${MODES.map((m,j)=>`<option value="${j+1}" ${j+1==sm?'selected':''}>${m}</option>`).join('')}</select>
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
- <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Chụp màn hình</button>
+ <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Cap</button>
  <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
  ${vm?`<button class="b ${pz?'pause on':'resume'}" data-a="${pz?'tieptuc':'tamngung'}" data-n="${en}" aria-pressed="${!!pz}" title="${pz?'Bấm để tiếp tục':'Bấm để tạm ngưng'}">${sp(pz?'tieptuc':'tamngung')}${pz?'Đã tạm ngưng':'Đang chạy'}</button>`:''}
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
- <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
+ <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
+  <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
@@ -133,6 +134,7 @@ async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,o
 async function act(a,n){
  if(a=='bg'){bgTarget=n;$('bgf').click();return}
  if(a=='bgx')return delBg(n);
+ if(a=='khoidonglai'){if(!confirm('Khởi động lại máy '+n+'? Máy sẽ restart sau khoảng 10 giây.'))return;return run(n,a,{cmd:'khoidonglai',machine:n},'Đã gửi lệnh restart '+n+'.','Đang gửi lệnh restart…')}
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
  if(a=='bat')return run(n,a,{cmd:'bat',machine:n},'Đã gửi lệnh bật '+n+'.','Đang gửi lệnh bật máy…');
  if(a=='chup')return run(n,a,{cmd:'chup',machine:n},'Đã gửi lệnh chụp '+n+'.','Đang chụp…');
