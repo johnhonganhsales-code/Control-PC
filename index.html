@@ -79,7 +79,7 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:12px 0}dt{col
 <dialog id="dlg"></dialog><div id="toast" role="status"></div>
 <script>
 const API='https://may-cua-tien.john-honganh-sales.workers.dev', CLIENT_ID='616827327363-30v6rgsuscl0pjf8j8ep2g439tsu7lcn.apps.googleusercontent.com';
-const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2'];
+const MODES=['1 - Login','2 - Treo GP','3 - Treo Zombie','4 - Farm lum tre','5 - Goi boss / Bu boss','6 - Treo rank 1-1','7 - Rao ban do','8 - Friend Pass','9 - Bu nuoc RZ2','10 - Tha ran / rua RZ2'];
 const TXT={up:'Đang mở',down:'Offline',grace:'Sắp tắt',new:'Chưa ping',paused:'Tạm dừng'},SEV={down:0,grace:1,up:2,new:3,paused:4};
 const PH='<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg><span>Chưa có ảnh. Bấm Cap.</span>';
 const $=id=>document.getElementById(id);let checks=[],cfg={accounts:[],vms:[]},shots={},imgs={},busy={},timer,syncT,autoT,fresh={},inited=false,bgTarget='',bgImgs={},paused={},choices={},openCfg={};
@@ -99,7 +99,8 @@ function clearBusy(n){if(busy[n]){clearTimeout(busy[n].t);delete busy[n]}}
 const T2M=m=>String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
 function getOpts(n,mode){const c=choices[n];if(c&&c.mode==mode&&c.opts)return c.opts;try{return JSON.parse(localStorage.getItem('opt_'+n+'_'+mode))||{}}catch(e){return{}}}
 function optsHtml(n,mode){const sc=(cfg.schema||{})[mode];if(!sc)return'';const o=getOpts(n,mode),en=esc(n);
- return `<details class="cfg" data-n="${en}"${openCfg[n]?' open':''}><summary>Cài đặt</summary>`+'<div class="opts">'+sc.map(([k,t,l,lo,hi])=>{const v=o[k],a=`data-o="${k}" data-t="${t}" data-n="${en}" data-m="${mode}"`;
+ return `<details class="cfg" data-n="${en}"${openCfg[n]?' open':''}><summary>Cài đặt</summary>`+'<div class="opts">'+sc.map(([k,t,l,lo,hi,fmt])=>{const v=o[k],a=`data-o="${k}" data-t="${t}" data-n="${en}" data-m="${mode}"`;
+  if(t=='e'){let s='';for(let x=lo;x<=hi;x++)s+=`<option value="${x}" ${(v==null?lo:v)==x?'selected':''}>${esc((fmt||'{}').replace('{}',x))}</option>`;return `<label class="ow">${esc(l)}<select ${a}>${s}</select></label>`}
   if(t=='b')return `<label class="ob"><input type="checkbox" ${a} ${v?'checked':''}>${esc(l)}</label>`;
   if(t=='x')return `<label class="ow">${esc(l)}<textarea ${a} rows="2" maxlength="900">${esc(v||'')}</textarea></label>`;
   if(t=='t')return `<label class="ow">${esc(l)}<input type="time" ${a} value="${v==null?'':T2M(v)}"></label>`;
@@ -118,7 +119,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  <select data-k="acc" data-n="${en}" aria-label="Tài khoản">${cfg.accounts.map((a,j)=>`<option ${j==sa?'selected':''}>${esc(a)}</option>`).join('')}</select></div>
   ${optsHtml(n,sm)}
  <div class="act"><button class="b" data-a="chup" data-n="${en}"${dis}>${sp('chup')}Cap</button>
- <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${vm?' title="Mở máy ảo (đang mở thì chạy bot theo chế độ + tài khoản trên app)"':dis}>${sp('mo')}RUN</button>
+ <button class="b run" data-a="mo" data-n="${en}" aria-label="${vm?'Mở máy ảo':'Chạy bot'}"${dis}>${sp('mo')}RUN</button>
  ${vm?`<button class="b ${pz?'pause on':'resume'}" data-a="${pz?'tieptuc':'tamngung'}" data-n="${en}" aria-pressed="${!!pz}" title="${pz?'Bấm để tiếp tục':'Bấm để tạm ngưng'}">${sp(pz?'tieptuc':'tamngung')}${pz?'Đã tạm ngưng':'Đang chạy'}</button>`:''}
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
@@ -136,9 +137,9 @@ async function seedChoices(){for(const n of checks.map(c=>c.name.toLowerCase()))
  try{await api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:c.mode,acc:c.acc,opts:c.opts})});choices[n]=c}catch(e){}}}
 async function syncPaused(){try{paused=await api('/paused')}catch(e){}}
 async function refreshShots(){if(await syncShots())safeRender()}
-async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy nhận lệnh trong khoảng 15 giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
+async function send(body,ok){try{await api('/command',{method:'POST',body:JSON.stringify(body)});toast(ok+' Máy sẽ nhận lệnh trong vài giây.');return true}catch(e){toast('Gửi lệnh lỗi: '+e.message);return false}}
 async function waitShot(n){const old=shots[n]||0;
- for(let k=0;k<12;k++){await new Promise(r=>setTimeout(r,4000));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();clearBusy(n);render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
+ for(let k=0;k<30;k++){await new Promise(r=>setTimeout(r,1500));try{const s=await api('/shots');if((s[n]||0)>old){await syncShots();clearBusy(n);render();toast('Đã có ảnh mới của '+n+'.');return}}catch(e){}}
  clearBusy(n);render();toast('Chưa nhận được ảnh của '+n+'. Máy có thể chưa cập nhật listener gửi ảnh lên web.')}
 async function run(n,a,body,okMsg,label){setBusy(n,label,a);if(await send(body,okMsg)){if(a=='tamngung')paused[n]=1;if(a=='tieptuc')delete paused[n];if(a=='chup')waitShot(n);else setBusy(n,'Máy đang nhận lệnh…',a,15000)}else{clearBusy(n);render()}}
 async function act(a,n){
@@ -165,7 +166,7 @@ $('grid').onchange=e=>{const s=e.target.closest('select[data-k]');if(!s)return;c
  s.blur();render()};
 $('grid').addEventListener('change',e=>{const i=e.target.closest('[data-o]');if(!i)return;const n=i.dataset.n,m=+i.dataset.m,o=getOpts(n,m);
  const v=i.type=='checkbox'?i.checked:i.dataset.t=='t'?(i.value?(+i.value.slice(0,2))*60+(+i.value.slice(3,5)):''):i.value.trim();
- if(v==='')delete o[i.dataset.o];else o[i.dataset.o]=i.dataset.t=='n'?+v:v;
+ if(v==='')delete o[i.dataset.o];else o[i.dataset.o]=(i.dataset.t=='n'||i.dataset.t=='e')?+v:v;
  localStorage.setItem('opt_'+n+'_'+m,JSON.stringify(o));
  {const ch=choices[n]||curChoice(n);choices[n]={mode:ch.mode,acc:ch.acc,opts:o};
   api('/choice',{method:'POST',body:JSON.stringify({machine:n,mode:ch.mode,acc:ch.acc,opts:o})}).then(()=>toast('Đã lưu cài đặt cho '+n+'.')).catch(er=>toast('Lưu cài đặt lỗi: '+er.message))}});
