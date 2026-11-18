@@ -124,6 +124,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
   <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button>
+  ${vm?`<button class="b run" data-a="mobot" data-n="${en}"${dis}>${sp('mobot')}Mở bot</button>`:''}
   <button class="b d" data-a="dungbot" data-n="${en}"${dis}>${sp('dungbot')}Tắt bot</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select,#grid input,#grid textarea'))return;render()}
@@ -147,6 +148,7 @@ async function act(a,n){
  if(a=='bg'){bgTarget=n;$('bgf').click();return}
  if(a=='bgx')return delBg(n);
  if(a=='khoidonglai'){if(!confirm('Khởi động lại máy '+n+'? Máy sẽ restart sau khoảng 10 giây.'))return;return run(n,a,{cmd:'khoidonglai',machine:n},'Đã gửi lệnh restart '+n+'.','Đang gửi lệnh restart…')}
+ if(a=='mobot')return run(n,a,{cmd:'mobot',machine:n,...curChoice(n)},'Đã gửi lệnh mở bot '+n+'.','Đang gửi lệnh mở bot…');
  if(a=='dungbot'){if(!confirm('Tắt hoàn toàn bot trên máy '+n+'?'))return;return run(n,a,{cmd:'dungbot',machine:n},'Đã gửi lệnh tắt bot '+n+'.','Đang gửi lệnh tắt bot…')}
  if(a=='tatmay'){if(!confirm('Tắt hẳn máy '+n+'? Máy sẽ shutdown và không thể bật lại từ xa.'))return;return run(n,a,{cmd:'tatmay',machine:n},'Đã gửi lệnh tắt máy '+n+'.','Đang gửi lệnh tắt máy…')}
  if(a=='bat')return run(n,a,{cmd:'bat',machine:n},'Đã gửi lệnh bật '+n+'.','Đang gửi lệnh bật máy…');
