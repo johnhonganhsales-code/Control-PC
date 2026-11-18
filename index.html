@@ -124,7 +124,7 @@ function card(c,i){const n=c.name.toLowerCase(),vm=cfg.vms.includes(n),im=imgs[n
  ${(cfg.wol||[]).includes(n)?`<button class="b pw" data-a="bat" data-n="${en}">${sp('bat')}Bật</button>`:''}
  <button class="b" data-a="khoidonglai" data-n="${en}"${dis}>${sp('khoidonglai')}Restart</button>
   <button class="b d" data-a="tatmay" data-n="${en}"${dis}>${sp('tatmay')}Tắt máy</button>
-  ${vm?'':`<button class="b d" data-a="dungbot" data-n="${en}"${dis}>${sp('dungbot')}Tắt bot</button>`}</div></div></article>`}
+  <button class="b d" data-a="dungbot" data-n="${en}"${dis}>${sp('dungbot')}Tắt bot</button></div></div></article>`}
 function render(){$('grid').innerHTML=checks.map(card).join('')}
 function safeRender(){const f=document.activeElement;if(f&&f.closest&&f.closest('#grid select,#grid input,#grid textarea'))return;render()}
 async function load(){try{$('err').textContent='';checks=(await api('/checks')).checks;
